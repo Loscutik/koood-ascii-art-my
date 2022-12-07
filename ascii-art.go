@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 )
 
 const (
@@ -14,11 +15,13 @@ const (
 )
 
 type (
-	ArtChar = [SYMBOL_HEIGHT]string
+	ArtChar   = [SYMBOL_HEIGHT]string
 	ArtFont   = map[rune]ArtChar
 	ArtString = [SYMBOL_HEIGHT]string
 )
-//TODO add handles of errors
+
+// TODO add handles of errors
+//TODO "" must print just new line
 func main() {
 	if len(os.Args) != ARGS+1 {
 		log.Fatalf("the programms needs the strict %d argument", ARGS)
@@ -38,13 +41,18 @@ func main() {
 	// 	}
 	// }
 
-	// strs := bytes.Split([]byte(os.Args[1]), []byte("\n"))
-	// for _, str := range strs {
-	// 	artStr := stringToArt(str, artFont)
-	// 	artPrint(artStr)
-	// }
+	strs := strings.Split(os.Args[1], "\n")
+	for _, str := range strs {
+		artStr, err := stringToArt(str, aFont)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		artPrint(artStr)
+	}
 }
-/* 
+
+/*
 reads a file with an ascii graphic fonts representing characters from ' '(space) to '~' and returns a map which keeps the characters
 maps's key is the character (type rune), map's element is a value of the type ArtChar= [SYMBOL_HEIGHT]string
 */
@@ -57,9 +65,9 @@ func GetArtFont(fileName string) (aFont ArtFont, err error) {
 	aFont = make(map[rune]ArtChar)
 	scanner := bufio.NewScanner(file)
 
-	//reading all characters to the map aFont
+	// reading all characters to the map aFont
 	for char := (' '); char <= '~'; char++ {
-		scanner.Scan() //skip the first empty line
+		scanner.Scan() // skip the first empty line
 
 		aFont[char], err = readArtChar(scanner)
 		if err != nil {
@@ -72,7 +80,7 @@ func GetArtFont(fileName string) (aFont ArtFont, err error) {
 }
 
 /*
-reads the next graphic character from given scanner, will return an error if scanner.Scan finishes with an error 
+reads the next graphic character from given scanner, will return an error if scanner.Scan finishes with an error
 */
 func readArtChar(scanner *bufio.Scanner) (aChar ArtChar, err error) {
 	for line := 0; line < SYMBOL_HEIGHT; line++ {
@@ -88,10 +96,20 @@ func readArtChar(scanner *bufio.Scanner) (aChar ArtChar, err error) {
 	return aChar, err
 }
 
-// func stringToArt(str []rune, afont ArtFont) (ArtString, error) {
-// 	//TODO check rune has to be from ' ' to '~'
-// 	return nil
-// }
+func stringToArt(str string, afont ArtFont) (aStr ArtString, err error) {
+	// TODO check: rune has to be from ' ' to '~'
+	// Art string contains 8 lines. Add lines from the all string's characters: the first line of all characters, then second, ...
+	for i := 0; i < SYMBOL_HEIGHT; i++ {
+		for _, ch := range str {
+			aStr[i] += afont[ch][i] // Add into the i-th line of the Art String i-th line of the next character
+		}
+		aStr[i] += "\n"
+	}
+	return
+}
 
-// func artPrint(astr ArtString) {
-// }
+func artPrint(aStr ArtString) {
+	for _, line := range aStr {
+		fmt.Print(line)
+	}
+}

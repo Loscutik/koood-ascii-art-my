@@ -21,7 +21,7 @@ type (
 )
 
 // TODO add handles of errors
-//TODO "" must print just new line
+// TODO  handle \!
 func main() {
 	if len(os.Args) != ARGS+1 {
 		log.Fatalf("the programms needs the strict %d argument", ARGS)
@@ -41,7 +41,7 @@ func main() {
 	// 	}
 	// }
 
-	strs := strings.Split(os.Args[1], "\n")
+	strs := strings.Split(os.Args[1], "\\n")
 	for _, str := range strs {
 		artStr, err := stringToArt(str, aFont)
 		if err != nil {
@@ -96,9 +96,18 @@ func readArtChar(scanner *bufio.Scanner) (aChar ArtChar, err error) {
 	return aChar, err
 }
 
+/*
+turns a string into a ascii graphic string
+*/
 func stringToArt(str string, afont ArtFont) (aStr ArtString, err error) {
 	// TODO check: rune has to be from ' ' to '~'
-	// Art string contains 8 lines. Add lines from the all string's characters: the first line of all characters, then second, ...
+	// the empty string must comprise only 1 line
+	if str =="" { 
+		aStr[0]="\n"
+		return 
+	}
+
+	// Art string contains 8 lines. Add lines from the all string's characters: the first line of all characters, then second, and so on
 	for i := 0; i < SYMBOL_HEIGHT; i++ {
 		for _, ch := range str {
 			aStr[i] += afont[ch][i] // Add into the i-th line of the Art String i-th line of the next character
@@ -108,6 +117,9 @@ func stringToArt(str string, afont ArtFont) (aStr ArtString, err error) {
 	return
 }
 
+/*
+prints a ascii graphic string
+*/
 func artPrint(aStr ArtString) {
 	for _, line := range aStr {
 		fmt.Print(line)

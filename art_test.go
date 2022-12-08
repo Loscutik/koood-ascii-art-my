@@ -15,19 +15,28 @@ func errHandle(err error) {
 }
 
 func BenchmarkReadArtLetter(b *testing.B) {
-	STEP := 0
-	f, err := os.Open("testfont.txt")
+	STEP := 24
+	f, err := os.Open("fonts/standard.txt")
 	errHandle(err)
-	var aLetter ArtLetter
+	var aLetter ArtString
 	scanner := bufio.NewScanner(f)
 		
 	for i := 0; i <= 9*STEP; i++ {
 		scanner.Scan()
 	}
-	aLetter, err = readArtLetter(scanner)
-	fmt.Println(aLetter)
+	aLetter, err = readArtChar(scanner)
+	fmt.Println()
+	ArtPrint(aLetter)
 	if err!=nil {
 		b.Fatal(err)
 	}
 
+}
+
+func TestIsAsciiString (t *testing.T) {
+	str:="fggh"
+	res,runes:=IsAsciiString(str)
+	if !res{
+		t.Fatalf("wrong runes %c", runes)
+	}
 }

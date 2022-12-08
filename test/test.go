@@ -8,18 +8,20 @@ import (
 )
 
 const (
-	F_STANDART    = "standard.txt"
+	F_STANDART    = "../fonts/shadow.txt"
 	SYMBOL_HEIGHT = 8
+	FIRST=' '
+	LAST = 'Z'
 )
 
 type (
-	ArtLetter = [SYMBOL_HEIGHT][]byte
+	ArtLetter = [SYMBOL_HEIGHT][]byte //when use []byte - map keeps wrong bytes, when use string - ok
 	ArtFont   = map[rune]ArtLetter
 	ArtString = [SYMBOL_HEIGHT]string
 )
 
 func main() {
-	file, _ := os.Open("testfont.txt")
+	/*file, _ := os.Open("testfont.txt")
 	aFont := make(map[rune]ArtLetter)
 	scanner := bufio.NewScanner(file)
 	var aLetter ArtLetter
@@ -53,8 +55,10 @@ func main() {
 
 	aFont['"'] = aLetter
 	fmt.Println(aFont['"'])
+	*/
+	 aFont,_:=GetArtFont(F_STANDART)
 
-	 for char := (' '); char <= '"'; char++ {
+	 for char := (FIRST); char <= LAST; char++ {
 	for i := 0; i < SYMBOL_HEIGHT; i++ {
 		fmt.Print(char)
 		fmt.Print(": ")
@@ -72,10 +76,10 @@ func GetArtFont(fileName string) (aFont ArtFont, err error) {
 	aFont = make(map[rune]ArtLetter)
 	scanner := bufio.NewScanner(file)
 
-	for char := (' '); char <= '~'; char++ {
+	for char := (FIRST); char <= LAST; char++ {
 		scanner.Scan()
 		aFont[char], err = readArtLetter(scanner)
-		fmt.Println(aFont[char])
+		//fmt.Println(aFont[char])
 		// for i := 0; i < SYMBOL_HEIGHT; i++ {
 		// fmt.Println(string(aFont[char][i]))
 		// }

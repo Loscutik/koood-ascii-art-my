@@ -12,16 +12,15 @@ const (
 	ARGS          = 1
 	F_STANDART    = "standard.txt"
 	SYMBOL_HEIGHT = 8
+	FIRST_SYMBOL  = ' '
+	LAST_SYMBOL   = '~'
 )
 
 type (
-	//ArtChar   = [SYMBOL_HEIGHT]string
 	ArtFont   = map[rune]ArtString
 	ArtString = [SYMBOL_HEIGHT]string
 )
 
-// TODO add handles of errors
-// TODO  handle \!
 func main() {
 	if len(os.Args) != ARGS+1 {
 		log.Fatalf("the programms needs the strict %d argument", ARGS)
@@ -38,7 +37,6 @@ func main() {
 	// 		fmt.Println(": ")
 	// 		ArtPrint(aFont[char])
 	// 	}
-	
 
 	strs := strings.Split(os.Args[1], "\\n")
 	for _, str := range strs {
@@ -65,7 +63,7 @@ func GetArtFont(fileName string) (aFont ArtFont, err error) {
 	scanner := bufio.NewScanner(file)
 
 	// reading all characters to the map aFont
-	for char := (' '); char <= '~'; char++ {
+	for char := (FIRST_SYMBOL); char <= LAST_SYMBOL; char++ {
 		scanner.Scan() // skip the first empty line
 
 		aFont[char], err = readArtChar(scanner)
@@ -99,16 +97,32 @@ func readArtChar(scanner *bufio.Scanner) (aChar ArtString, err error) {
 turns a string into a ascii graphic string
 */
 func StringToArt(str string, afont ArtFont) (aStr ArtString, err error) {
-	// TODO check: rune has to be from ' ' to '~'
-
+	if ok, runes := IsAsciiString(str); !ok {
+		err = fmt.Errorf("the programme only works with ascii symbols. Next symbols cannot be handle %v ", runes)
+	}
 	// Art string contains 8 lines. Add lines from the all string's characters: the first line of all characters, then second, and so on
 	for i := 0; i < SYMBOL_HEIGHT; i++ {
 		for _, ch := range str {
 			aStr[i] += afont[ch][i] // Add into the i-th line of the Art String i-th line of the next character
 		}
-		//aStr[i] += "\n"
+		// aStr[i] += "\n"
 	}
 	return
+}
+
+/*
+checks if string contains only printable ascii symbols
+*/
+func IsAsciiString(str string) (bool, []rune) {
+	res := true
+	var notValidRunes []rune
+	for _, rune := range str {
+		if rune < FIRST_SYMBOL || rune > LAST_SYMBOL {
+			res = false
+			notValidRunes = append(notValidRunes, rune)
+		}
+	}
+	return res, notValidRunes
 }
 
 /*
@@ -116,13 +130,12 @@ prints a ascii graphic string
 */
 func ArtPrint(aStr ArtString) {
 	// the empty string must comprise only 1 line
-	if aStr[0] =="" { 
+	if aStr[0] == "" {
 		fmt.Println()
-		return 
+		return
 	}
-	
+
 	for _, line := range aStr {
-		//fmt.Print(i)
 		fmt.Println(line)
 	}
 }

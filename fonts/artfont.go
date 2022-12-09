@@ -27,7 +27,7 @@ func GetArtFont(fileName string) (aFont ArtFont, err error) {
 	if err != nil {
 		log.Fatalln(err)
 	}
-
+	defer file.Close()
 	aFont = make(map[rune]ArtString)
 	scanner := bufio.NewScanner(file)
 

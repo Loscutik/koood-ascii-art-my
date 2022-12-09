@@ -24,6 +24,11 @@ func main() {
 		log.Fatalf("the programms needs the strict %d argument", ARGS)
 	}
 
+	// check that argument only contains ascii symbols from ' ' to '~'
+	if ok, runes := IsAsciiString(os.Args[1]); !ok {
+		log.Fatalf("the programme only works with ascii symbols. Next symbols cannot be handle %v ", runes)
+	}
+
 	// get the beautiful font for art-printing
 	aFont, err := fonts.GetArtFont("fonts/" + F_STANDART)
 	if err != nil {
@@ -45,9 +50,6 @@ func main() {
 turns a string into a ascii graphic string
 */
 func StringToArt(str string, afont ArtFont) (aStr ArtString, err error) {
-	if ok, runes := IsAsciiString(str); !ok {
-		err = fmt.Errorf("the programme only works with ascii symbols. Next symbols cannot be handle %v ", runes)
-	}
 	// Art string contains 8 lines. Add lines from the all string's characters: the first line of all characters, then second, and so on
 	for i := 0; i < fonts.SYMBOL_HEIGHT; i++ {
 		for _, ch := range str {

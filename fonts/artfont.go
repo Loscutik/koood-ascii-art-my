@@ -14,8 +14,8 @@ const (
 )
 
 type (
-	ArtFont   = map[rune]ArtString
-	ArtString = [SYMBOL_HEIGHT]string
+	ArtFont    map[rune]ArtString
+	ArtString  [SYMBOL_HEIGHT]string
 )
 
 /*
@@ -28,6 +28,7 @@ func GetArtFont(fileName string) (aFont ArtFont, err error) {
 		log.Fatalln(err)
 	}
 	defer file.Close()
+	
 	aFont = make(map[rune]ArtString)
 	scanner := bufio.NewScanner(file)
 
@@ -51,7 +52,7 @@ reads the next graphic character from given scanner, will return an error if sca
 func readArtChar(scanner *bufio.Scanner) (aChar ArtString, err error) {
 	for line := 0; line < SYMBOL_HEIGHT; line++ {
 		if scanner.Scan() {
-			aChar[line] = (scanner.Text())
+			aChar[line] = scanner.Text()
 		} else if err = scanner.Err(); err != nil {
 			break
 		} else {

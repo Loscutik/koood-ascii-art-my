@@ -1,4 +1,4 @@
-package fonts
+package asciiart
 
 import (
 	"bufio"
@@ -14,13 +14,7 @@ func errHandle(err error) {
 	}
 }
 
-func ArtPrint(aStr ArtString) {
-	// the empty string must comprise only 1 line
-	if aStr[0] == "" {
-		fmt.Println()
-		return
-	}
-}
+
 
 func BenchmarkReadArtLetter(b *testing.B) {
 	STEP := 24
@@ -34,7 +28,7 @@ func BenchmarkReadArtLetter(b *testing.B) {
 	}
 	aLetter, err = readArtChar(scanner)
 	fmt.Println()
-	ArtPrint(aLetter)
+	aLetter.ArtPrint()
 	if err != nil {
 		b.Fatal(err)
 	}

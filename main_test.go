@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 )
 
 func TestColor(t *testing.T) {
-	colors:=[]string{
+	colors := []string{
 		"red",
 		"rgb(125, 241, 25)",
 		"#12f52a",
@@ -14,17 +15,19 @@ func TestColor(t *testing.T) {
 		"#c139cc",
 		"#ac6fb1",
 		"#3dd33rr",
-}
+	}
 
-for i,c:=range colors {
-	code:=getColorCode(c)
-	fmt.Println(c)
-	fmt.Println(code)
-	fmt.Println(i)
-	if code=="\033[0m" {
-		t.Fatalf("error")
+	for i, c := range colors {
+		code := getColorCode(c)
+		fmt.Println(c)
+		fmt.Println(code)
+		fmt.Println(i)
+		if code == "\033[0m" {
+			t.Fatalf("error")
+		}
 	}
 }
 
-
+func BenchmarkTestSplit(b *testing.B) {
+	fmt.Printf("%#v",strings.Split("dgg fg  ", " "))
 }

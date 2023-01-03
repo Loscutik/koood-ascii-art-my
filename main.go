@@ -1,12 +1,10 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -22,8 +20,6 @@ type input struct {
 	text           string
 }
 
-// TODO color
-// TODO justify
 // TODO reverse
 func main() {
 	args, err := parseArgs()
@@ -31,183 +27,177 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cmd := exec.Command("tput", "cols")
-	cmd.Stdin = os.Stdin
-	col, err := cmd.Output()
-
-	fmt.Println(string(col))
-	ncol, err := strconv.Atoi((strings.ReplaceAll(string(col), "\n", "")))
-	fmt.Println(ncol)
-
-	fmt.Println("\x1b[33m")
-
 	// check that argument only contains ascii symbols from ' ' to '~'
 	if ok, runes := asciiart.IsAsciiString(args.text); !ok {
 		log.Fatalf("the programme only works with ascii symbols. Next symbols cannot be handle %v ", runes)
 	}
+	
+	var aStrs []asciiart.ArtString // for keeping lines of art Text
+	var CSIcolor string
 
-	var color string
-	var aStrs []asciiart.ArtString
-	if args.color != "" {
-		color = getColorCode(args.color)
-		fmt.Print(color)
-	}
-
-	if args.lettersToColor != "" {
-		aStrs, err = asciiart.GetStyleArtText(args.text, "banners/"+args.banner+".txt", color, args.lettersToColor)
+	if args.lettersToColor != "" || args.align != "left" {
+		aStrs, err = getStyleArtText(&args)
 		if err != nil {
 			log.Fatalln(err)
 		}
 	} else { // no letters to color or no color at all
+		if args.color != "" {
+			CSIcolor = getColorCode(args.color)
+			fmt.Print(CSIcolor)
+		}
 		aStrs, err = asciiart.GetArtText(args.text, "banners/"+args.banner+".txt")
 		if err != nil {
 			log.Fatalln(err)
 		}
 	}
 
+	// output the result into a file or terminal
 	if args.output == "" {
 		asciiart.ArtPrint(aStrs)
 	} else {
-		file, err:=os.Create(args.output)
+		file, err := os.Create(args.output)
 		if err != nil {
-			log.Fatalln( err)
+			log.Fatalln(err)
 		}
 		defer file.Close()
 
-		asciiart.ArtFprint(file,aStrs)
+		asciiart.ArtFprint(file, aStrs)
 	}
 }
 
-/*
-parses arguments. It returns a struct filled with values of flags and parametrs.
-If a flag isn't given the function returns for it the default value of the flag.
+/* 
+gets the terminal width
 */
-func parseArgs() (input, error) {
-	var args input
-	flag.StringVar(&args.output, "output", "", "--output=FILE_NAME\t save output into the flile")
-	flag.StringVar(&args.align, "align", "left", "--align=WORD\t align by WORD: left, right, center, justify")
-	flag.StringVar(&args.color, "color", "", "--color=WORD\t colored output by  WORD: black, red,green, yellow, blue, purple, cyan, white")
-	flag.Parse()
-
-	flags := os.Args[1 : flag.NFlag()+1]
-	for _, flag := range flags {
-		if !strings.HasPrefix(flag, "--") || !strings.Contains(flag, "=") {
-			return args, fmt.Errorf("Usage: go run . [OPTIONS] [STRING] [BANNER]\n\nExample: go run . --output=<fileName.txt> --color=<color> <letters to be colored> something standard\n")
-		}
+func getTerminalWidth() (int, error) {
+	cmd := exec.Command("tput", "cols")
+	cmd.Stdin = os.Stdin
+	col, err := cmd.Output()
+	if err != nil {
+		return 0, fmt.Errorf("cannot get the terminal's width: %s", err)
 	}
 
-	nArgs := flag.NArg()
-	args.banner = asciiart.F_STANDART
-	args.lettersToColor = ""
-
-	if nArgs == 1 {
-		args.text = flag.Arg(0)
-		return args, nil
+	wT, err := strconv.Atoi((strings.TrimSuffix(string(col), "\n"))) // terminal's width
+	if err != nil {
+		return 0, fmt.Errorf("cannot get the terminal's width: %s", err)
 	}
 
-	/* in this case with color 1 arg=letters,2=text, no banner
-	if nArgs == 2 {
-		if args.color != "" {
-			args.lettersToColor = flag.Arg(0)
-			args.text = flag.Arg(1)
-			return args, nil
-		} else { // the color did not define
-			args.text = flag.Arg(0)
-			err := args.checkBanner(flag.Arg(1))
-			return args, err
-		}
-	}
-	*/
-
-	if nArgs == 2 {
-		err := args.checkBanner(flag.Arg(1))
-		if err != nil && args.color != "" { // the banner is not valid but there is color, so it wasn't a banner
-			args.lettersToColor = flag.Arg(0)
-			args.text = flag.Arg(1)
-			return args, nil
-		}
-
-		args.text = flag.Arg(0)
-		return args, err
-	}
-
-	if nArgs == 3 && args.color != "" {
-		args.lettersToColor = flag.Arg(0)
-		args.text = flag.Arg(1)
-		err := args.checkBanner(flag.Arg(2))
-		return args, err
-	}
-
-	return args, fmt.Errorf("Usage: go run . [OPTIONS] [STRING] [BANNER]\n\nEX: go run . --output=<fileName.txt> --color=<color> <letters to be colored> something standard\n")
+	return wT, nil
 }
 
 /*
-check is the banner valid
+converts text into colored artstring using given banner.
+CSI is an escape sequence for setting display attributes, letters is a string which defines letters for coloring.
+letters must be the given text with addition symbols befor and after the  symbols for coloring.
+In purpose to avoid any ambiguity, this addition symbols must not be the same as the near symbols.
+n is a length of each art ascii string counted only by printable symbols
 */
-func (args *input) checkBanner(banner string) error {
-	if banner == "standard" || banner == "shadow" || banner == "thinkertoy" {
-		args.banner = banner
-		return nil
-	} else {
-		return fmt.Errorf("Available banners are: shadow, standard, thinkertoy.\n\nPlease try again.")
+func getStyleArtText(args *input) (aText []asciiart.ArtString, err error) {
+	// get  ascii art font from banner
+	aFont, err := asciiart.GetArtFont("banners/" + args.banner + ".txt")
+	if err != nil {
+		err = fmt.Errorf("cannot get artfont: %s", err)
+		return
 	}
-}
+	
+	termWidth, err := getTerminalWidth()
+	if err != nil {
+		log.Fatal(err)
+	}
+	
+	strs := strings.Split(args.text, "\\n")
+	CSI := getColorCode(args.color)
+	needStyle := (args.lettersToColor == "")
+	charsLettters := []rune(args.lettersToColor)
+	iL := 0 // counter for charsLetters in the lettersToColor
 
-/*
-returns an ANSI escape sequence for color
-*/
-func getColorCode(color string) string {
-	color = strings.ToLower(color)
-	switch color {
-	case "white", "#ffffff", "rgb(255, 255, 255)":
-		return "\033[37m"
-	case "cyan", "#00ffff", "rgb(0, 255, 255)":
-		return "\033[36m"
-	case "purple", "magenta", "#ff00ff", "rgb(255, 0, 255)":
-		return "\033[35m"
-	case "blue", "#0000ff", "rgb(0, 0, 255)":
-		return "\033[34m"
-	case "yellow", "#ffff00", "rgb(255, 255, 0)":
-		return "\033[33m"
-	case "green", "#00ff00", "rgb(0, 255, 0)":
-		return "\033[32m"
-	case "red", "#ff0000", "rgb(255, 0, 0)":
-		return "\033[31m"
-	case "":
-		return ""
-	default:
+	for _, str := range strs {
 
-		if strings.HasPrefix(color, "rgb(") {
-			r := regexp.MustCompile(`rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)`)
-			colors := r.FindStringSubmatch(color)
-			if colors == nil {
-				return "\033[0m" // Reset color
-			}
-			res := "\033[38;2"
-			for i := 1; i < len(colors); i++ {
-				res += ";" + colors[i]
-			}
-			return res + "m"
+		if str == "" {
+			aText = append(aText, asciiart.StringToArt("", aFont))
+			continue
 		}
 
-		if strings.HasPrefix(color, "#") {
-			r := regexp.MustCompile(`#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})`)
-			colors := r.FindStringSubmatch(color)
-			if colors == nil {
-				return "\033[0m" // Reset color
-			}
+		// calculate the length of the feature art string
+		lenArtString := 0
+		for _, ch := range str {
+			lenArtString += len(aFont[ch][0])
+		}
 
-			res := "\033[38;2"
-			for i := 1; i < len(colors); i++ {
-				c, err := strconv.ParseInt(colors[i], 16, 32)
-				if err != nil {
-					return "\033[0m" // Reset color
+		words := strings.Split(str, " ")
+		var aStr asciiart.ArtString // to form art string from the current str
+
+		// calculate and add offsets for the aligns "right" and "center" or number of words (no spare spaces) for justify
+		//- offsets := make([]int, len(words)-1)
+		offset := termWidth - lenArtString
+		wordsNumber := 0
+		switch args.align {
+		case "right":
+			addOffset(&aStr, offset)
+		case "center":
+			addOffset(&aStr, offset/2)
+		case "justify":
+			for _, w := range words {
+				if w != "" {
+					wordsNumber++
 				}
-				res += ";" + strconv.FormatInt(c, 10)
 			}
-			return res + "m"
 		}
 
-		return "\033[0m" // Reset color
+		setStyle(&aStr, needStyle, CSI)
+
+		for i, word := range words {
+			// look for different characters in text and lettersToColor. If they are different, change color (set or drop it)
+			if word != "" {
+				iCh := 0 // counter for characters in the word
+				chars := []rune(word)
+				for iCh < len(chars) {
+					if iL < len(charsLettters) && chars[iCh] != charsLettters[iL] {
+						needStyle = !needStyle
+						setStyle(&aStr, needStyle, CSI)
+						iL++
+
+					} else {
+						aStr.AddChar(chars[iCh], aFont)
+						iCh++
+						iL++
+					}
+				}
+
+				if args.align == "justify" && wordsNumber != 1 {
+					// calculete and add the next offset
+					wordsNumber--
+					currentOffset := offset / wordsNumber
+					offset -= currentOffset
+					addOffset(&aStr, currentOffset)
+				}
+			}
+
+			if i < len(words)-1 { // not need a space after the last word
+				aStr.AddChar(' ', aFont)
+			}
+		}
+		aText = append(aText, aStr)
+	}
+
+	return
+}
+
+/*
+adds CSI to aStr if it needs or drop all styles off
+*/
+func setStyle(aStr *asciiart.ArtString, need bool, CSI string) {
+	if need {
+		aStr.AddConstString(CSI)
+	} else {
+		aStr.AddConstString("\033[0m") // all styles off
+	}
+}
+
+/*
+adds add offset to ascii string
+*/
+func addOffset(aStr *asciiart.ArtString, offset int) {
+	if offset > 0 {
+		aStr.AddConstString("\033[" + strconv.Itoa(offset) + "C")
 	}
 }

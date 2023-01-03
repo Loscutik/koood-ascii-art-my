@@ -2,8 +2,8 @@ package asciiart
 
 import (
 	"fmt"
+	"strings"
 	"testing"
-
 )
 
 func TestIsAsciiString(t *testing.T) {
@@ -64,4 +64,17 @@ func BenchmarkStringToArtEmpty(t *testing.B) {
 	// if aStr !=nil{
 	// 	t.Fatal("not nil")
 	// }
+}
+
+func BenchmarkTextToArt(b *testing.B) {
+	str,err:=GetArtTextInOneString(`|RjL\n|7Y\n\n\n|t^:;T`,"../banners/standard.txt")
+	if err != nil {
+		b.Fatal(err)
+	}
+	ss:=strings.Split("fr gh  t ", " ")
+	for i,s := range ss {
+		fmt.Printf("%d: |%s| ",i,s)
+	}
+	fmt.Println()
+	fmt.Println(str)
 }

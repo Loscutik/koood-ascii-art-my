@@ -115,6 +115,18 @@ func (aStr *ArtString) Len() int {
 }
 
 /*
+returns true if two ascii string are equal 
+*/
+func IsEqual(a,b ArtString)bool{
+	for i := 0; i < SYMBOL_HEIGHT; i++ {
+		if a[i]!=b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+/*
 prints an ascii graphic string
 */
 func (aStr *ArtString) ArtPrint() {

@@ -12,19 +12,19 @@ returns an ANSI escape sequence for color
 func getColorCode(color string) string {
 	color = strings.ToLower(color)
 	switch color {
-	case "white", "#ffffff", "rgb(255, 255, 255)":
+	case "white":
 		return "\033[37m"
-	case "cyan", "#00ffff", "rgb(0, 255, 255)":
+	case "cyan":
 		return "\033[36m"
-	case "purple", "magenta", "#ff00ff", "rgb(255, 0, 255)":
+	case "purple", "magenta":
 		return "\033[35m"
-	case "blue", "#0000ff", "rgb(0, 0, 255)":
+	case "blue":
 		return "\033[34m"
-	case "yellow", "#ffff00", "rgb(255, 255, 0)":
+	case "yellow":
 		return "\033[33m"
-	case "green", "#00ff00", "rgb(0, 255, 0)":
+	case "green":
 		return "\033[32m"
-	case "red", "#ff0000", "rgb(255, 0, 0)":
+	case "red":
 		return "\033[31m"
 	default:
 		if strings.HasPrefix(color, "rgb(") {
@@ -43,7 +43,7 @@ func getColorCode(color string) string {
 parses given rgb color and returns an ANSI escape sequence for color
 */
 func parseColorRgb(rgb string) string {
-	r := regexp.MustCompile(`rgb\((\d{1,3}), (\d{1,3}), (\d{1,3})\)`)
+	r := regexp.MustCompile(`rgb\((\d{1,3}), ?(\d{1,3}), ?(\d{1,3})\)`)
 	colors := r.FindStringSubmatch(rgb)
 	if colors == nil {
 		return "\033[0m" // Reset color

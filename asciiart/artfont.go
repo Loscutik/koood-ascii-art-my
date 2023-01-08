@@ -7,15 +7,16 @@ import (
 	"os"
 )
 
-const (
-	SYMBOL_HEIGHT = 8
-	FIRST_SYMBOL  = ' '
-	LAST_SYMBOL   = '~'
-)
 
 type (
 	ArtFont    map[rune]ArtString
 	ArtString  [SYMBOL_HEIGHT]string
+)
+
+const (
+	SYMBOL_HEIGHT = 8
+	FIRST_SYMBOL  = ' '
+	LAST_SYMBOL   = '~'
 )
 
 /*

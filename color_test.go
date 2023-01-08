@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 )
 
@@ -26,8 +25,4 @@ func TestColor(t *testing.T) {
 			t.Fatalf("error")
 		}
 	}
-}
-
-func BenchmarkTestSplit(b *testing.B) {
-	fmt.Printf("%#v",strings.Split("dgg fg  ", " "))
 }

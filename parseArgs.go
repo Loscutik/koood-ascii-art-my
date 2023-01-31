@@ -33,6 +33,14 @@ func parseArgs() (input, error) {
 	}
 
 	nArgs := flag.NArg()
+	var arg []string
+	if nArgs>1 && flag.Arg(0) == "-" {
+		arg = flag.Args()[1:]
+		nArgs--
+	} else {
+		arg = flag.Args()
+	}
+
 	args.banner = asciiart.F_STANDART
 	args.lettersToColor = ""
 
@@ -45,40 +53,40 @@ func parseArgs() (input, error) {
 	}
 
 	if nArgs == 1 {
-		args.text = flag.Arg(0)
+		args.text = arg[0]
 		return args, nil
 	}
 
 	/* in this case with color 1 arg=letters,2=text, no banner
 	if nArgs == 2 {
 		if args.color != "" {
-			args.lettersToColor = flag.Arg(0)
-			args.text = flag.Arg(1)
+			args.lettersToColor = arg[0)
+			args.text = arg[1)
 			return args, nil
 		} else { // the color did not define
-			args.text = flag.Arg(0)
-			err := args.checkBanner(flag.Arg(1))
+			args.text = arg[0)
+			err := args.checkBanner(arg[1))
 			return args, err
 		}
 	}
 	*/
 
 	if nArgs == 2 {
-		err := args.checkBanner(flag.Arg(1))
+		err := args.checkBanner(arg[1])
 		if err != nil && args.color != "" { // the banner is not valid but there is color, so it wasn't a banner
-			args.lettersToColor = flag.Arg(0)
-			args.text = flag.Arg(1)
+			args.lettersToColor = arg[0]
+			args.text = arg[1]
 			return args, nil
 		}
 
-		args.text = flag.Arg(0)
+		args.text = arg[0]
 		return args, err
 	}
 
 	if nArgs == 3 && args.color != "" {
-		args.lettersToColor = flag.Arg(0)
-		args.text = flag.Arg(1)
-		err := args.checkBanner(flag.Arg(2))
+		args.lettersToColor = arg[0]
+		args.text = arg[1]
+		err := args.checkBanner(arg[2])
 		return args, err
 	}
 

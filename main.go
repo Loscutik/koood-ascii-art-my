@@ -22,7 +22,6 @@ type input struct {
 	text           string
 }
 
-// TODO reverse
 func main() {
 	args, err := parseArgs()
 	if err != nil {
@@ -91,6 +90,16 @@ func main() {
 gets the terminal width
 */
 func getTerminalWidth() (int, error) {
+	// 	var sz struct {
+	// 		rows    uint16
+	// 		cols    uint16
+	// 		xpixels uint16
+	// 		ypixels uint16
+	// 	}
+	// 	_, _, _ = syscall.Syscall(syscall.SYS_IOCTL,
+	// 		os.Stdout.Fd(), uintptr(syscall.TIOCGWINSZ), uintptr(unsafe.Pointer(&sz)))
+	// wT:=int(sz.cols)
+	
 	cmd := exec.Command("tput", "cols")
 	cmd.Stdin = os.Stdin
 	col, err := cmd.Output()

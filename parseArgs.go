@@ -10,7 +10,16 @@ import (
 )
 
 const (
-	USAGE_MESSAGE = "usage: go run . [OPTIONS] [STRING] [BANNER]\n\nExample: go run . --output=<fileName.txt> --color=<color> <letters to be colored> something standard"
+	USAGE_MESSAGE = `
+	usage: 
+	         ascii-art [OPTIONS] [letters to be colored] [STRING] [BANNER]
+	
+	Example: ascii-art --output=fileName.txt --color=green  "string for converting to ascii" standard
+	
+	three banners are available:  standart (default), shadow and thinkertoy
+	use -h (or --help) for detail information of options
+	
+	`
 )
 
 /*
@@ -20,8 +29,8 @@ If a flag isn't given the function returns for it the default value of the flag.
 func parseArgs() (input, error) {
 	var args input
 	flag.StringVar(&args.output, "output", "", "--output=FILE_NAME\t save output into the flile")
-	flag.StringVar(&args.align, "align", "left", "--align=WORD\t align by WORD: left, right, center, justify")
-	flag.StringVar(&args.color, "color", "", "--color=WORD\t color output by  WORD: black, red,green, yellow, blue, purple, cyan, white")
+	flag.StringVar(&args.align, "align", "left", "--align=WORD      \t align by WORD: left, right, center, justify")
+	flag.StringVar(&args.color, "color", "", "--color=WORD      \t color output by  WORD: black, red,green, yellow, blue, purple, cyan, white or using rgb notation: rgb(#,#,#), Ex: rgb(124,5,78)")
 	flag.StringVar(&args.reverse, "reverse", "", "--reverse=path/to/file\t convert the graphic representation by the standard ascii banner into a text")
 	flag.Parse()
 

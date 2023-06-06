@@ -82,7 +82,12 @@ func main() {
 		}
 		defer file.Close()
 
-		asciiart.ArtFprint(file, aStrs)
+		asciiart.ArtFprint(file, aStrs)	
+	}
+
+	if args.color != "" {
+		CSIcolor = getColorCode("white")
+		fmt.Print(CSIcolor)
 	}
 }
 

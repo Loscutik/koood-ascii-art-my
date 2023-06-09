@@ -1,9 +1,9 @@
 There are two methods of how you can color letters:
 
 Using the terminal, please go to the destination folder, and type the following to the command line:
-go run . --color=red Yrx "Your text here" standard
 
-go run . --color=red "Yo*r t*xt *ere" "Your text here" standard
+go run . --color=red "You*r te*xt *here" "Your text here" standard
+here letters between ** will be colored in red: "r te" and "here" will be red. You can use any symols that is not encountered in your string to mark lettere for coloring. 
 
 
 "go run ." will launch the program.
